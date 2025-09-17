@@ -1,0 +1,6 @@
+/src/main/java/com/ck642509/ithome_ironman_2025_tauri/generated
+/src/main/jniLibs/**/*.so
+/src/main/assets/tauri.conf.json
+/tauri.build.gradle.kts
+/proguard-tauri.pro
+/tauri.properties

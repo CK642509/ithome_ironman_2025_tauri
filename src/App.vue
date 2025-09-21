@@ -9,6 +9,23 @@ async function greet() {
   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
   greetMsg.value = await invoke("greet", { name: name.value });
 }
+
+async function createNewUser() {
+  try {
+    const userData = {
+      name: "張小明",
+      age: 25,
+      email: "ming@example.com"
+    };
+    
+    const response = await invoke("create_user", { user: userData });
+    
+    console.log("建立結果:", response);
+    // 輸出: { success: true, message: "使用者 張小明 建立成功！", user_id: 12345 }
+  } catch (error) {
+    console.error("建立失敗:", error);
+  }
+}
 </script>
 
 <template>
@@ -33,6 +50,7 @@ async function greet() {
       <button type="submit">Greet</button>
     </form>
     <p>{{ greetMsg }}</p>
+    <button @click="createNewUser">Create User</button>
   </main>
 </template>
 

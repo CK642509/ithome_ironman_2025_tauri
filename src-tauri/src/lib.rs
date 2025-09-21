@@ -32,11 +32,24 @@ fn create_user(user: UserInfo) -> ApiResponse {
     }
 }
 
+#[tauri::command]
+async fn check_file_exists(path: String) -> Result<bool, String> {
+    // 這裡是一個模擬的耗時操作
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+
+    if std::path::Path::new(&path).exists() {
+        Ok(true)
+    } else {
+        // 當回傳 Err 時，前端的 invoke Promise 會被 reject
+        Err("找不到指定的檔案".to_string())
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, create_user])
+        .invoke_handler(tauri::generate_handler![greet, create_user, check_file_exists])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

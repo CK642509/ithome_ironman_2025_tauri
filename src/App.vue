@@ -26,6 +26,16 @@ async function createNewUser() {
     console.error("建立失敗:", error);
   }
 }
+
+async function checkFile() {
+  try {
+    const filePath = "C:\\path\\to\\your\\file.txt"; // 替換為你要檢查的檔案路徑
+    const exists = await invoke("check_file_exists", { path: filePath });
+    console.log(`檔案是否存在: ${exists}`);
+  } catch (error) {
+    console.error("檢查檔案失敗:", error);
+  }
+}
 </script>
 
 <template>
@@ -51,6 +61,7 @@ async function createNewUser() {
     </form>
     <p>{{ greetMsg }}</p>
     <button @click="createNewUser">Create User</button>
+    <button @click="checkFile">Check File Exists</button>
   </main>
 </template>
 

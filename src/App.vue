@@ -1,41 +1,43 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { listen, UnlistenFn } from '@tauri-apps/api/event'
+
+// 定義後端傳來的 payload 型別
+interface ProgressPayload {
+  percentage: number;
+  message: string;
+}
 
 const greetMsg = ref("");
 const name = ref("");
+const progressMessage = ref<string>('尚未開始')
+let unlistenProgress: UnlistenFn | null = null;
 
 async function greet() {
   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
   greetMsg.value = await invoke("greet", { name: name.value });
 }
 
-async function createNewUser() {
-  try {
-    const userData = {
-      name: "張小明",
-      age: 25,
-      email: "ming@example.com"
-    };
-    
-    const response = await invoke("create_user", { user: userData });
-    
-    console.log("建立結果:", response);
-    // 輸出: { success: true, message: "使用者 張小明 建立成功！", user_id: 12345 }
-  } catch (error) {
-    console.error("建立失敗:", error);
-  }
+async function start() {
+  // 呼叫後端的 start 命令來啟動長時間任務
+  await invoke("start");
 }
 
-async function checkFile() {
-  try {
-    const filePath = "C:\\path\\to\\your\\file.txt"; // 替換為你要檢查的檔案路徑
-    const exists = await invoke("check_file_exists", { path: filePath });
-    console.log(`檔案是否存在: ${exists}`);
-  } catch (error) {
-    console.error("檢查檔案失敗:", error);
+onMounted(async () => {
+  // 監聽名為 'task-progress' 的事件
+  unlistenProgress = await listen<ProgressPayload>('task-progress', (event) => {
+    // event.payload 就是後端傳來的 ProgressPayload 物件
+    progressMessage.value = event.payload.message;
+  });
+})
+
+// 非常重要：在元件銷毀時，必須取消監聽以避免記憶體洩漏
+onUnmounted(() => {
+  if (unlistenProgress) {
+    unlistenProgress();
   }
-}
+})
 </script>
 
 <template>
@@ -60,8 +62,8 @@ async function checkFile() {
       <button type="submit">Greet</button>
     </form>
     <p>{{ greetMsg }}</p>
-    <button @click="createNewUser">Create User</button>
-    <button @click="checkFile">Check File Exists</button>
+    <button @click="start">Start</button>
+    <p>{{ progressMessage }}</p>
   </main>
 </template>
 

@@ -1,55 +1,29 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { listen, UnlistenFn, emit } from '@tauri-apps/api/event'
 
-// 定義後端傳來的 payload 型別
-interface ProgressPayload {
-  percentage: number;
-  message: string;
-}
-
-// 定義發送給後端的 payload 型別
-interface FrontendEventPayload {
-  message: string;
-}
 
 const greetMsg = ref("");
 const name = ref("");
-const progressMessage = ref<string>('尚未開始')
-let unlistenProgress: UnlistenFn | null = null;
+
 
 async function greet() {
   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
   greetMsg.value = await invoke("greet", { name: name.value });
 }
 
-async function start() {
-  // 呼叫後端的 start 命令來啟動長時間任務
-  await invoke("start");
+const counter = ref(0)
+
+async function increment() {
+  counter.value = await invoke('increment_counter')
 }
 
-function notifyBackend(): void {
-  console.log('Notifying backend...');
-  emit('frontend-event', {
-    message: '嗨！後端，這是一則來自前端的訊息！'
-  } as FrontendEventPayload);
+async function refreshCounter() {
+  counter.value = await invoke('get_counter')
 }
-
 
 onMounted(async () => {
-  // 監聽名為 'task-progress' 的事件
-  unlistenProgress = await listen<ProgressPayload>('task-progress', (event) => {
-    // event.payload 就是後端傳來的 ProgressPayload 物件
-    progressMessage.value = event.payload.message;
-  });
-})
-
-// 非常重要：在元件銷毀時，必須取消監聽以避免記憶體洩漏
-onUnmounted(() => {
-  if (unlistenProgress) {
-    unlistenProgress();
-  }
+  await refreshCounter()
 })
 </script>
 
@@ -75,9 +49,11 @@ onUnmounted(() => {
       <button type="submit">Greet</button>
     </form>
     <p>{{ greetMsg }}</p>
-    <button @click="start">Start</button>
-    <p>{{ progressMessage }}</p>
-    <button @click="notifyBackend">Notify Backend</button>
+    <div class="row">
+      <h3>計數器: {{ counter }}</h3>
+      <button @click="increment">增加</button>
+      <button @click="refreshCounter">重新整理</button>
+    </div>
   </main>
 </template>
 

@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { listen, UnlistenFn } from '@tauri-apps/api/event'
+import { listen, UnlistenFn, emit } from '@tauri-apps/api/event'
 
 // 定義後端傳來的 payload 型別
 interface ProgressPayload {
   percentage: number;
+  message: string;
+}
+
+// 定義發送給後端的 payload 型別
+interface FrontendEventPayload {
   message: string;
 }
 
@@ -23,6 +28,14 @@ async function start() {
   // 呼叫後端的 start 命令來啟動長時間任務
   await invoke("start");
 }
+
+function notifyBackend(): void {
+  console.log('Notifying backend...');
+  emit('frontend-event', {
+    message: '嗨！後端，這是一則來自前端的訊息！'
+  } as FrontendEventPayload);
+}
+
 
 onMounted(async () => {
   // 監聽名為 'task-progress' 的事件
@@ -64,6 +77,7 @@ onUnmounted(() => {
     <p>{{ greetMsg }}</p>
     <button @click="start">Start</button>
     <p>{{ progressMessage }}</p>
+    <button @click="notifyBackend">Notify Backend</button>
   </main>
 </template>
 

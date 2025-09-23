@@ -1,6 +1,6 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use serde::{Serialize};
-use tauri::Emitter;
+use tauri::{Emitter, Listener};
 use tokio::time::{sleep, Duration};
 
 #[tauri::command]
@@ -39,6 +39,18 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet, start, start_long_task])
+        .setup(|app| {
+            app.listen("frontend-event", |event| {
+                println!("Got 'frontend-event' with payload: {:?}", event.payload());
+
+                // 啟動一個新執行緒來處理延遲任務，避免阻塞主執行緒
+                std::thread::spawn(move || {
+                    std::thread::sleep(std::time::Duration::from_secs(3));
+                    println!("延遲 3 秒後... 後端確認收到了來自前端的訊息！");
+                });
+            });
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

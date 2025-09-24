@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { readTextFile } from "@tauri-apps/plugin-fs";
 
 const greetMsg = ref("");
 const name = ref("");
+const fileContent = ref("");
+const fileError = ref("");
 
 async function greet() {
   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -13,10 +14,15 @@ async function greet() {
 
 async function readFile() {
   try {
-    const content = await readTextFile("path/to/your/file.txt");
+    fileError.value = "";
+    // Use custom Tauri command to read sample content
+    const content = await invoke<string>("read_sample_file");
+    fileContent.value = content;
     console.log("File content:", content);
   } catch (error) {
-    console.error("Error invoking read_file:", error);
+    console.error("Error reading file:", error);
+    fileError.value = `Error reading file: ${error}`;
+    fileContent.value = "";
   }
 }
 </script>
@@ -44,7 +50,14 @@ async function readFile() {
     </form>
     <p>{{ greetMsg }}</p>
     <div class="row">
-      <button @click="readFile">Read File</button>
+      <button @click="readFile">Read Sample File</button>
+    </div>
+    <div v-if="fileError" class="error">
+      {{ fileError }}
+    </div>
+    <div v-if="fileContent" class="file-content">
+      <h3>File Content:</h3>
+      <pre>{{ fileContent }}</pre>
     </div>
   </main>
 </template>
@@ -149,6 +162,40 @@ button {
   margin-right: 5px;
 }
 
+.file-content {
+  margin-top: 20px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.file-content h3 {
+  color: #396cd8;
+  margin-bottom: 10px;
+}
+
+.file-content pre {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  text-align: left;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+}
+
+.error {
+  color: #d73a49;
+  background-color: #ffeaea;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  padding: 10px;
+  margin: 10px auto;
+  max-width: 600px;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
@@ -166,6 +213,18 @@ button {
   }
   button:active {
     background-color: #0f0f0f69;
+  }
+
+  .file-content pre {
+    background-color: #1a1a1a;
+    border-color: #404040;
+    color: #f6f6f6;
+  }
+
+  .error {
+    color: #ff6b6b;
+    background-color: #2d1b1b;
+    border-color: #5a2d2d;
   }
 }
 </style>

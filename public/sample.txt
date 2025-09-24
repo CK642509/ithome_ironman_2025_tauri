@@ -1,0 +1,6 @@
+Hello from Tauri!
+This is a sample text file that can be read by the application.
+Current time: 2025-09-24
+Feature: File reading demonstration
+
+This file demonstrates how to read text files in a Tauri application using the fs plugin.

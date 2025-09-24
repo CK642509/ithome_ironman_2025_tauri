@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { readTextFile } from "@tauri-apps/plugin-fs";
 
 const greetMsg = ref("");
 const name = ref("");
@@ -10,19 +11,14 @@ async function greet() {
   greetMsg.value = await invoke("greet", { name: name.value });
 }
 
-const counter = ref(0);
-
-async function increment() {
-  counter.value = await invoke("increment_counter");
+async function readFile() {
+  try {
+    const content = await readTextFile("path/to/your/file.txt");
+    console.log("File content:", content);
+  } catch (error) {
+    console.error("Error invoking read_file:", error);
+  }
 }
-
-async function refreshCounter() {
-  counter.value = await invoke("get_counter");
-}
-
-onMounted(async () => {
-  await refreshCounter();
-});
 </script>
 
 <template>
@@ -48,9 +44,7 @@ onMounted(async () => {
     </form>
     <p>{{ greetMsg }}</p>
     <div class="row">
-      <h3>計數器: {{ counter }}</h3>
-      <button @click="increment">增加</button>
-      <button @click="refreshCounter">重新整理</button>
+      <button @click="readFile">Read File</button>
     </div>
   </main>
 </template>

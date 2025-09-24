@@ -29,6 +29,7 @@ fn get_counter(state: State<Mutex<AppState>>) -> i32 {
 pub fn run() {
     Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![greet, increment_counter, get_counter])
         .setup(|app| {
             app.manage(Mutex::new(AppState::default()));

@@ -17,7 +17,7 @@ async function readFile() {
   try {
     fileError.value = "";
     // Use custom Tauri command to read sample content
-    const file = await readTextFile("temp/test.txt", {
+    const file = await readTextFile("temp\\test.txt", {
       baseDir: BaseDirectory.Desktop,
     });
 

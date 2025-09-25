@@ -8,6 +8,9 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "fs:allow-applocaldata-read"
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [{ "path": "$DESKTOP/**/*" }]
+    }
   ]
 }

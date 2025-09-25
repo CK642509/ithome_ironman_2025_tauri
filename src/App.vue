@@ -17,14 +17,14 @@ async function readFile() {
   try {
     fileError.value = "";
     // Use custom Tauri command to read sample content
-    const file = await readTextFile("test.txt", {
-      baseDir: BaseDirectory.AppLocalData,
+    const file = await readTextFile("temp/test.txt", {
+      baseDir: BaseDirectory.Desktop,
     });
 
     fileContent.value = file;
   } catch (error) {
-    console.error("Error reading file:", error);
-    fileError.value = `Error reading file: ${error}`;
+    console.error('Permission denied:', error);
+    fileError.value = `Permission denied: ${error}`;
     fileContent.value = "";
   }
 }

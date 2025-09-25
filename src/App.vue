@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { open, BaseDirectory } from "@tauri-apps/plugin-fs";
+import { readTextFile, BaseDirectory } from "@tauri-apps/plugin-fs";
 
 const greetMsg = ref("");
 const name = ref("");
@@ -17,18 +17,11 @@ async function readFile() {
   try {
     fileError.value = "";
     // Use custom Tauri command to read sample content
-    const file = await open("test.txt", {
-      read: true,
+    const file = await readTextFile("test.txt", {
       baseDir: BaseDirectory.AppLocalData,
     });
 
-    const stat = await file.stat();
-    const buf = new Uint8Array(stat.size);
-    await file.read(buf);
-    const textContents = new TextDecoder().decode(buf);
-    await file.close();
-    fileContent.value = textContents;
-    console.log("File content:", textContents);
+    fileContent.value = file;
   } catch (error) {
     console.error("Error reading file:", error);
     fileError.value = `Error reading file: ${error}`;

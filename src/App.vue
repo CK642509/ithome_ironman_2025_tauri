@@ -1,37 +1,21 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { readTextFile, BaseDirectory } from "@tauri-apps/plugin-fs";
 
 const greetMsg = ref("");
 const name = ref("");
-const fileContent = ref("");
-const fileError = ref("");
 
 async function greet() {
   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
   greetMsg.value = await invoke("greet", { name: name.value });
 }
-
-async function readFile() {
-  try {
-    fileError.value = "";
-    // Use custom Tauri command to read sample content
-    const file = await readTextFile("temp\\test.txt", {
-      baseDir: BaseDirectory.Desktop,
-    });
-
-    fileContent.value = file;
-  } catch (error) {
-    console.error('Permission denied:', error);
-    fileError.value = `Permission denied: ${error}`;
-    fileContent.value = "";
-  }
-}
 </script>
 
 <template>
   <main class="container">
+    <div class="custom-titlebar" data-tauri-drag-region style="background-color: green;">
+      <span>我的應用程式</span>
+    </div>
     <h1>Welcome to Tauri + Vue</h1>
 
     <div class="row">
@@ -52,16 +36,6 @@ async function readFile() {
       <button type="submit">Greet</button>
     </form>
     <p>{{ greetMsg }}</p>
-    <div class="row">
-      <button @click="readFile">Read Sample File</button>
-    </div>
-    <div v-if="fileError" class="error">
-      {{ fileError }}
-    </div>
-    <div v-if="fileContent" class="file-content">
-      <h3>File Content:</h3>
-      <pre>{{ fileContent }}</pre>
-    </div>
   </main>
 </template>
 

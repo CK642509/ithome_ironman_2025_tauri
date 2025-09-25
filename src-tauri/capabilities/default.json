@@ -8,9 +8,6 @@
   "permissions": [
     "core:default",
     "opener:default",
-    {
-      "identifier": "fs:allow-read-text-file",
-      "allow": [{ "path": "$DESKTOP/**/*" }]
-    }
+    "core:window:allow-start-dragging"
   ]
 }

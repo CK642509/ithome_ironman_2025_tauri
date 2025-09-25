@@ -12,9 +12,13 @@
   "app": {
     "windows": [
       {
-        "title": "ithome_ironman_2025_tauri",
+        "label": "main",
+        "title": "我的第一個 Tauri 應用",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": false
       }
     ],
     "security": {

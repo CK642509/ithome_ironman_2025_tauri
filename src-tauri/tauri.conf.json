@@ -14,6 +14,7 @@
       {
         "label": "main",
         "title": "我的第一個 Tauri 應用",
+        "url": "/main",
         "width": 800,
         "height": 600,
         "resizable": true,

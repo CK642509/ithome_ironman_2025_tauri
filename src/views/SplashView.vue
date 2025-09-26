@@ -12,23 +12,45 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { getCurrentWindow, Window } from "@tauri-apps/api/window";
 
 const router = useRouter();
 const progress = ref(0);
 
-// onMounted(() => {
-//   // 模擬載入進度
-//   const interval = setInterval(() => {
-//     progress.value += 10;
-//     if (progress.value >= 100) {
-//       clearInterval(interval);
-//       // 3秒後自動跳轉到主頁面
-//       setTimeout(() => {
-//         router.push("/main");
-//       }, 500);
-//     }
-//   }, 300);
-// });
+onMounted(async () => {
+  // 模擬載入進度
+  const interval = setInterval(() => {
+    progress.value += 1;
+    if (progress.value >= 100) {
+      clearInterval(interval);
+    }
+  }, 100); // 10 秒內從 0% 到 100%
+
+  // 10 秒後關閉 splash screen 並顯示 main window
+  setTimeout(async () => {
+    try {
+      // 嘗試獲取並顯示 main window
+      const mainWindow = new Window("main");
+      await mainWindow.show();
+      await mainWindow.setFocus();
+      
+      // 等待一下確保 main window 完全顯示後再關閉 splash
+      setTimeout(async () => {
+        try {
+          const currentWindow = getCurrentWindow();
+          await currentWindow.close();
+        } catch (closeError) {
+          console.error("關閉 splash screen 時發生錯誤:", closeError);
+        }
+      }, 100);
+      
+    } catch (error) {
+      console.error("切換 window 時發生錯誤:", error);
+      // 如果失敗，使用路由跳轉作為備用方案
+      router.push("/main");
+    }
+  }, 10000); // 10 秒
+});
 </script>
 
 <style scoped>

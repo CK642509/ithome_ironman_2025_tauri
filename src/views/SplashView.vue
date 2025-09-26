@@ -60,24 +60,35 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 100%;
+  background: rgba(102, 126, 234, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: white;
   font-family: Arial, sans-serif;
+  /* border-radius: 10px; */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 h1 {
-  margin-bottom: 2rem;
-  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
 p {
-  margin: 1rem 0;
-  font-size: 1.2rem;
+  margin: 0.8rem 0;
+  font-size: 1rem;
+  text-align: center;
 }
 
 .loading-bar {
-  width: 300px;
+  width: 250px;
   height: 6px;
   background-color: rgba(255, 255, 255, 0.3);
   border-radius: 3px;
@@ -90,6 +101,23 @@ p {
   background-color: #4CAF50;
   transition: width 0.3s ease;
   border-radius: 3px;
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+}
+</style>
+
+<style>
+/* 全局樣式，移除捲軸和預設邊距 */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+#app {
+  height: 100vh;
+  overflow: hidden;
 }
 </style>
 

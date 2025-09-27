@@ -22,22 +22,25 @@ onMounted(() => {
 // 發送消息
 function sendMessage() {
   if (newMessage.value.trim()) {
+    const messageToSend = newMessage.value; // 保存消息內容
+    
     chatMessages.value.push({
       sender: "我",
-      message: newMessage.value,
+      message: messageToSend,
       timestamp: new Date().toLocaleTimeString()
     });
+    
+    // 清空輸入框
+    newMessage.value = "";
     
     // 模擬對方回覆（demo 用途）
     setTimeout(() => {
       chatMessages.value.push({
         sender: chatPartner.value,
-        message: `收到您的消息："${newMessage.value}"`,
+        message: `收到您的消息："${messageToSend}"`,
         timestamp: new Date().toLocaleTimeString()
       });
     }, 1000);
-    
-    newMessage.value = "";
   }
 }
 

@@ -5,17 +5,13 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      redirect: "/splash"
-    },
-    {
-      path: "/splash",
-      name: "SplashPage",
-      component: () => import("../views/SplashView.vue"),
-    },
-    {
-      path: "/main",
       name: "MainPage",
       component: () => import("../views/MainView.vue"),
+    },
+    {
+      path: "/chat",
+      name: "ChatWindow",
+      component: () => import("../views/ChatWindow.vue"),
     },
   ],
 });

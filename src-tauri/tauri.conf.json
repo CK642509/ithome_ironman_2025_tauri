@@ -14,26 +14,12 @@
       {
         "label": "main",
         "title": "我的第一個 Tauri 應用",
-        "url": "/main",
+        "url": "/",
         "width": 800,
         "height": 600,
         "center": true,
         "resizable": true,
-        "fullscreen": false,
-        "decorations": false,
-        "visible": false
-      },
-      {
-        "label": "splashscreen",
-        "title": "我的第一個 Splashscreen",
-        "url": "/splash",
-        "width": 450,
-        "height": 300,
-        "center": true,
-        "resizable": false,
-        "decorations": false,
-        "transparent": true,
-        "alwaysOnTop": true
+        "fullscreen": false
       }
     ],
     "security": {

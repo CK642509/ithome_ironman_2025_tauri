@@ -18,6 +18,9 @@ async function createChatWindow() {
     return;
   }
 
+  await invoke("open_chat_window", { partnerName: name.value });
+  return;
+
   try {
     // 嘗試獲取已存在的聊天窗口
     const existingWindow = await WebviewWindow.getByLabel('chat');

@@ -11,35 +11,54 @@ async function greet() {
   greetMsg.value = await invoke("greet", { name: name.value });
 }
 
-// 創建新的聊天窗口
+// 創建或更新聊天窗口
 async function createChatWindow() {
   if (!name.value.trim()) {
     alert("請先輸入聊天對象的名字！");
     return;
   }
 
-  const windowLabel = `chat-${Date.now()}`;
-  const chatWindow = new WebviewWindow(windowLabel, {
-    url: `/chat?partner=${encodeURIComponent(name.value)}`,
-    title: `與 ${name.value} 聊天`,
-    width: 400,
-    height: 600,
-    resizable: true,
-    minimizable: true,
-    maximizable: true,
-    closable: true,
-    center: true,
-  });
+  try {
+    // 嘗試獲取已存在的聊天窗口
+    const existingWindow = await WebviewWindow.getByLabel('chat');
+    
+    if (existingWindow) {
+      // 如果窗口已存在，發送事件通知更新聊天對象
+      await existingWindow.emit('change-chat-partner', {
+        partner: name.value
+      });
+      
+      // 聚焦到已存在的窗口
+      await existingWindow.setFocus();
+      console.log('Updated existing chat window with new partner:', name.value);
+    } else {
+      // 如果窗口不存在，創建新的聊天窗口
+      const chatWindow = new WebviewWindow('chat', {
+        url: `/chat?partner=${encodeURIComponent(name.value)}`,
+        title: `與 ${name.value} 聊天`,
+        width: 400,
+        height: 600,
+        resizable: true,
+        minimizable: true,
+        maximizable: true,
+        closable: true,
+        center: true,
+        decorations: false, // 使用自定義標題欄
+      });
 
-  // 監聽窗口創建事件
-  chatWindow.once('tauri://created', function () {
-    console.log('Chat window created successfully');
-  });
+      // 監聽窗口創建事件
+      chatWindow.once('tauri://created', function () {
+        console.log('Chat window created successfully');
+      });
 
-  // 監聽窗口錯誤事件
-  chatWindow.once('tauri://error', function (e) {
-    console.error('Error creating chat window:', e);
-  });
+      // 監聽窗口錯誤事件
+      chatWindow.once('tauri://error', function (e) {
+        console.error('Error creating chat window:', e);
+      });
+    }
+  } catch (error) {
+    console.error('Error in createChatWindow:', error);
+  }
 }
 </script>
 

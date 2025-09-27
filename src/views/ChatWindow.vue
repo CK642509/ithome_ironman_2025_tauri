@@ -6,18 +6,53 @@ const chatMessages = ref<Array<{ sender: string; message: string; timestamp: str
 const newMessage = ref("");
 const chatPartner = ref("");
 
-// 從 URL 參數獲取聊天對象名稱
+// 初始化聊天對象並監聽事件
 onMounted(() => {
   const urlParams = new URLSearchParams(window.location.search);
   chatPartner.value = urlParams.get('partner') || '未知用戶';
   
   // 添加一條歡迎消息
-  chatMessages.value.push({
-    sender: "系統",
-    message: `歡迎與 ${chatPartner.value} 開始聊天！`,
-    timestamp: new Date().toLocaleTimeString()
+  addWelcomeMessage(chatPartner.value);
+  
+  // 監聽切換聊天對象事件
+  const currentWindow = WebviewWindow.getCurrent();
+  currentWindow.listen('change-chat-partner', (event) => {
+    const payload = event.payload as { partner: string };
+    const newPartner = payload.partner;
+    if (newPartner && newPartner !== chatPartner.value) {
+      changeChatPartner(newPartner);
+    }
   });
 });
+
+// 添加歡迎消息
+function addWelcomeMessage(partner: string) {
+  chatMessages.value.push({
+    sender: "系統",
+    message: `歡迎與 ${partner} 開始聊天！`,
+    timestamp: new Date().toLocaleTimeString()
+  });
+}
+
+// 切換聊天對象
+function changeChatPartner(newPartner: string) {
+  const oldPartner = chatPartner.value;
+  chatPartner.value = newPartner;
+  
+  // 清空聊天記錄並添加切換消息
+  chatMessages.value = [];
+  chatMessages.value.push({
+    sender: "系統",
+    message: `已從與 ${oldPartner} 的聊天切換到與 ${newPartner} 的聊天`,
+    timestamp: new Date().toLocaleTimeString()
+  });
+  
+  addWelcomeMessage(newPartner);
+  
+  // 更新窗口標題
+  const currentWindow = WebviewWindow.getCurrent();
+  currentWindow.setTitle(`與 ${newPartner} 聊天`);
+}
 
 // 發送消息
 function sendMessage() {

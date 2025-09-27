@@ -4,7 +4,8 @@
   "description": "Capability for all windows",
   "windows": [
     "main",
-    "splashscreen"
+    "splashscreen",
+    "chat"
   ],
   "permissions": [
     "core:default",
@@ -16,6 +17,9 @@
     "core:webview:allow-create-webview-window",
     "core:window:allow-create",
     "core:webview:allow-webview-position",
-    "core:webview:allow-webview-size"
+    "core:webview:allow-webview-size",
+    "core:event:allow-emit",
+    "core:event:allow-listen",
+    "core:window:allow-set-title"
   ]
 }

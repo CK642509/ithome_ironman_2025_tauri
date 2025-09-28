@@ -1,6 +1,6 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-use tauri::{Builder, AppHandle, Manager};
-use tauri::menu::{MenuBuilder, SubmenuBuilder};
+use tauri::{Builder, AppHandle, Manager, App};
+use tauri::menu::{MenuBuilder, SubmenuBuilder, Menu};
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -22,53 +22,64 @@ fn show_version_info(app_handle: &AppHandle) {
     }
 }
 
+fn create_menu(app: &App) -> tauri::Result<Menu<tauri::Wry>> {
+    // 建立 File submenu
+    let file_submenu = SubmenuBuilder::new(app, "File")
+        .text("open", "Open")
+        .text("close", "Close")
+        .build()?;
+
+    // 建立 Help submenu
+    let help_submenu = SubmenuBuilder::new(app, "Help")
+        .text("info", "About")
+        .build()?;
+
+    // 建立主選單
+    let menu = MenuBuilder::new(app)
+        .item(&file_submenu)
+        .item(&help_submenu)
+        .build()?;
+
+    Ok(menu)
+}
+
+fn setup_menu_handlers(app: &App) {
+    app.on_menu_event(move |app_handle: &tauri::AppHandle, event| {
+        println!("menu event: {:?}", event.id());
+
+        match event.id().0.as_str() {
+            "open" => {
+                println!("open event");
+                // 這裡可以加入開啟檔案的邏輯
+            }
+            "close" => {
+                println!("close event");
+                // 這裡可以加入關閉應用程式的邏輯
+                let _ = app_handle.exit(0);
+            }
+            "info" => {
+                println!("info event - showing version");
+                show_version_info(app_handle);
+            }
+            _ => {
+                println!("unexpected menu event");
+            }
+        }
+    });
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet])
         .setup(|app| {
-            // 建立 File submenu
-            let file_submenu = SubmenuBuilder::new(app, "File")
-                .text("open", "Open")
-                .text("close", "Close")
-                .build()?;
-
-            // 建立 Help submenu
-            let help_submenu = SubmenuBuilder::new(app, "Help")
-                .text("info", "About")
-                .build()?;
-
-            // 建立主選單
-            let menu = MenuBuilder::new(app)
-                .item(&file_submenu)
-                .item(&help_submenu)
-                .build()?;
-
+            // 建立並設定選單
+            let menu = create_menu(app)?;
             app.set_menu(menu)?;
 
-            app.on_menu_event(move |app_handle: &tauri::AppHandle, event| {
-                println!("menu event: {:?}", event.id());
-
-                match event.id().0.as_str() {
-                    "open" => {
-                        println!("open event");
-                        // 這裡可以加入開啟檔案的邏輯
-                    }
-                    "close" => {
-                        println!("close event");
-                        // 這裡可以加入關閉應用程式的邏輯
-                        let _ = app_handle.exit(0);
-                    }
-                    "info" => {
-                        println!("info event - showing version");
-                        show_version_info(app_handle);
-                    }
-                    _ => {
-                        println!("unexpected menu event");
-                    }
-                }
-            });
+            // 設定選單事件處理器
+            setup_menu_handlers(app);
 
             Ok(())
         })

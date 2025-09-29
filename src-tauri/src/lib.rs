@@ -1,6 +1,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use tauri::{Builder, AppHandle, Manager, App};
 use tauri::menu::{MenuBuilder, SubmenuBuilder, Menu};
+use tauri::tray::TrayIconBuilder;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -74,13 +75,9 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet])
         .setup(|app| {
-            // 建立並設定選單
-            let menu = create_menu(app)?;
-            app.set_menu(menu)?;
-
-            // 設定選單事件處理器
-            setup_menu_handlers(app);
-
+            let tray = TrayIconBuilder::new()
+                .icon(app.default_window_icon().unwrap().clone())
+                .build(app)?;
             Ok(())
         })
         .run(tauri::generate_context!())

@@ -1,10 +1,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use tauri::{Builder, AppHandle, Manager, App};
-use tauri::menu::{MenuBuilder, SubmenuBuilder, Menu};
+use tauri::menu::{MenuBuilder, SubmenuBuilder, Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
-use tauri::{
-  menu::{MenuItem}
-};
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -72,29 +69,42 @@ fn setup_menu_handlers(app: &App) {
     });
 }
 
+fn create_tray_menu(app: &App) -> tauri::Result<Menu<tauri::Wry>> {
+    let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+    let menu = Menu::with_items(app, &[&quit_i])?;
+    Ok(menu)
+}
+
+fn setup_tray_icon(app: &App) -> tauri::Result<()> {
+    let tray_menu = create_tray_menu(app)?;
+
+    let _tray = TrayIconBuilder::new()
+        .icon(app.default_window_icon().unwrap().clone())
+        .menu(&tray_menu)
+        .on_menu_event(|app, event| match event.id.as_ref() {
+            "quit" => {
+                println!("quit menu item was clicked");
+                app.exit(0);
+            }
+            _ => {
+                println!("menu item {:?} not handled", event.id);
+            }
+        })
+        .show_menu_on_left_click(false)
+        .build(app)?;
+
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet])
         .setup(|app| {
-            let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&quit_i])?;
+            // 設定系統托盤圖示
+            setup_tray_icon(app)?;
 
-            let tray = TrayIconBuilder::new()
-                .icon(app.default_window_icon().unwrap().clone())
-                .menu(&menu)
-                .on_menu_event(|app, event| match event.id.as_ref() {
-                    "quit" => {
-                        println!("quit menu item was clicked");
-                        app.exit(0);
-                    }
-                    _ => {
-                        println!("menu item {:?} not handled", event.id);
-                    }
-                })
-                .show_menu_on_left_click(false)
-                .build(app)?;
             Ok(())
         })
         .run(tauri::generate_context!())

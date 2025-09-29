@@ -70,8 +70,9 @@ fn setup_menu_handlers(app: &App) {
 }
 
 fn create_tray_menu(app: &App) -> tauri::Result<Menu<tauri::Wry>> {
+    let open_i = MenuItem::with_id(app, "open", "Open", true, None::<&str>)?;
     let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&quit_i])?;
+    let menu = Menu::with_items(app, &[&open_i, &quit_i])?;
     Ok(menu)
 }
 
@@ -82,6 +83,13 @@ fn setup_tray_icon(app: &App) -> tauri::Result<()> {
         .icon(app.default_window_icon().unwrap().clone())
         .menu(&tray_menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
+            "open" => {
+                println!("open menu item was clicked");
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.set_focus();
+                }
+            }
             "quit" => {
                 println!("quit menu item was clicked");
                 app.exit(0);
@@ -104,6 +112,19 @@ pub fn run() {
         .setup(|app| {
             // 設定系統托盤圖示
             setup_tray_icon(app)?;
+
+            // 設定視窗關閉事件處理器
+            if let Some(window) = app.get_webview_window("main") {
+                let window_clone = window.clone();
+                window.on_window_event(move |event| {
+                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                        // 阻止預設的關閉行為
+                        api.prevent_close();
+                        // 隱藏視窗而不是關閉程式
+                        let _ = window_clone.hide();
+                    }
+                });
+            }
 
             Ok(())
         })

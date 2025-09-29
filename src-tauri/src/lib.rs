@@ -2,6 +2,9 @@
 use tauri::{Builder, AppHandle, Manager, App};
 use tauri::menu::{MenuBuilder, SubmenuBuilder, Menu};
 use tauri::tray::TrayIconBuilder;
+use tauri::{
+  menu::{MenuItem}
+};
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -75,8 +78,13 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet])
         .setup(|app| {
+            let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&quit_i])?;
+
             let tray = TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
+                .menu(&menu)
+                .show_menu_on_left_click(false)
                 .build(app)?;
             Ok(())
         })

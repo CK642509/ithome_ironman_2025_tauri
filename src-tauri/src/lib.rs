@@ -113,20 +113,17 @@ pub fn run() {
             // 設定系統托盤圖示
             setup_tray_icon(app)?;
 
-            // 設定視窗關閉事件處理器
-            if let Some(window) = app.get_webview_window("main") {
-                let window_clone = window.clone();
-                window.on_window_event(move |event| {
-                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                        // 阻止預設的關閉行為
-                        api.prevent_close();
-                        // 隱藏視窗而不是關閉程式
-                        let _ = window_clone.hide();
-                    }
-                });
-            }
-
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            // 設定視窗關閉事件處理器
+            match event {
+                tauri::WindowEvent::CloseRequested { api, .. } => {
+                    window.hide().unwrap();
+                    api.prevent_close();
+                }
+                _ => {}
+            }
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

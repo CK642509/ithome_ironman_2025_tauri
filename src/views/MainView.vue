@@ -1,19 +1,42 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { Store } from "@tauri-apps/plugin-store";
 
 const greetMsg = ref("");
 const name = ref("");
+const greetName = ref("");
+let store: Store;
 
 async function greet() {
   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
   greetMsg.value = await invoke("greet", { name: name.value });
+  greetName.value = name.value;
+  
+  // 儲存姓名到 store
+  if (store) {
+    await store.set("name", name.value);
+    await store.save();
+  }
 }
+
+// 在元件掛載時載入 store 中的姓名
+onMounted(async () => {
+  // 載入 store
+  store = await Store.load("user-data.json");
+  
+  // 檢查是否有儲存的姓名
+  const storedName = await store.get<string>("name");
+  if (storedName) {
+    greetName.value = storedName;
+  }
+});
 </script>
 
 <template>
   <main class="container">
     <h1>Welcome to Tauri + Vue</h1>
+    <h2 v-if="greetName !== ''">Welcome back~ {{ greetName }}~</h2>
 
     <div class="row">
       <a href="https://vite.dev" target="_blank">

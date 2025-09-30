@@ -2,10 +2,22 @@
 use tauri::{Builder, AppHandle, Manager, App};
 use tauri::menu::{MenuBuilder, SubmenuBuilder, Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
+use tauri_plugin_store::StoreExt;
 
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+fn greet(name: &str, app: AppHandle) -> Result<String, String> {
+    // 取得 store 實例
+    let store = app.store("user-data.json").map_err(|e| e.to_string())?;
+    
+    // 儲存姓名到 store
+    store.set("name", serde_json::Value::String(name.to_string()));
+    
+    // 儲存 store 到檔案
+    if let Err(e) = store.save() {
+        return Err(format!("Failed to save store: {}", e));
+    }
+    
+    Ok(format!("Hello, {}! You've been greeted from Rust!", name))
 }
 
 fn show_version_info(app_handle: &AppHandle) {

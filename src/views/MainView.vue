@@ -13,16 +13,16 @@ async function greet() {
   greetMsg.value = await invoke("greet", { name: name.value });
   greetName.value = name.value;
   
-  // 儲存姓名到 store
-  if (store) {
-    await store.set("name", name.value);
-    await store.save();
-  }
+  // // 也可以直接在前端儲存姓名到 store
+  // if (store) {
+  //   await store.set("name", name.value);
+  //   await store.save();
+  // }
 }
 
 // 在元件掛載時載入 store 中的姓名
 onMounted(async () => {
-  // 載入 store
+  // 載入 store (也可以不給參數，預設會是 store.json)
   store = await Store.load("user-data.json");
   
   // 檢查是否有儲存的姓名

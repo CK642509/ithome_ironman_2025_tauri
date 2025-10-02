@@ -3,6 +3,7 @@ use tauri::{Builder, AppHandle, Manager, App};
 use tauri::menu::{MenuBuilder, SubmenuBuilder, Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri_plugin_store::StoreExt;
+use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 
 #[tauri::command]
 fn greet(name: &str, app: AppHandle) -> Result<String, String> {
@@ -18,67 +19,6 @@ fn greet(name: &str, app: AppHandle) -> Result<String, String> {
     }
     
     Ok(format!("Hello, {}! You've been greeted from Rust!", name))
-}
-
-fn show_version_info(app_handle: &AppHandle) {
-    let version = app_handle.package_info().version.to_string();
-    let app_name = &app_handle.package_info().name;
-    
-    println!("應用程式版本資訊: {} v{}", app_name, version);
-    
-    // 嘗試透過前端顯示版本資訊
-    if let Some(window) = app_handle.get_webview_window("main") {
-        let _ = window.eval(&format!(
-            "alert('應用程式版本資訊\\n{} v{}');", 
-            app_name, version
-        ));
-    }
-}
-
-fn create_menu(app: &App) -> tauri::Result<Menu<tauri::Wry>> {
-    // 建立 File submenu
-    let file_submenu = SubmenuBuilder::new(app, "File")
-        .text("open", "Open")
-        .text("close", "Close")
-        .build()?;
-
-    // 建立 Help submenu
-    let help_submenu = SubmenuBuilder::new(app, "Help")
-        .text("info", "About")
-        .build()?;
-
-    // 建立主選單
-    let menu = MenuBuilder::new(app)
-        .item(&file_submenu)
-        .item(&help_submenu)
-        .build()?;
-
-    Ok(menu)
-}
-
-fn setup_menu_handlers(app: &App) {
-    app.on_menu_event(move |app_handle: &tauri::AppHandle, event| {
-        println!("menu event: {:?}", event.id());
-
-        match event.id().0.as_str() {
-            "open" => {
-                println!("open event");
-                // 這裡可以加入開啟檔案的邏輯
-            }
-            "close" => {
-                println!("close event");
-                // 這裡可以加入關閉應用程式的邏輯
-                let _ = app_handle.exit(0);
-            }
-            "info" => {
-                println!("info event - showing version");
-                show_version_info(app_handle);
-            }
-            _ => {
-                println!("unexpected menu event");
-            }
-        }
-    });
 }
 
 fn create_tray_menu(app: &App) -> tauri::Result<Menu<tauri::Wry>> {
@@ -121,10 +61,17 @@ pub fn run() {
     Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![greet])
         .setup(|app| {
             // 設定系統托盤圖示
             setup_tray_icon(app)?;
+
+            let ans = app.dialog()
+                .message("File not found")
+                .kind(MessageDialogKind::Error)
+                .title("Warning")
+                .blocking_show();
 
             Ok(())
         })
